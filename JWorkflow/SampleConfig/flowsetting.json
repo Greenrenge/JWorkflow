@@ -1,0 +1,347 @@
+////////////ข้อกำหนด
+//node จบ จะเป็น SYSTEM ที่มี ApproveNodes อันเดียวที่ชื่อ FINISH
+//condition null จะหมายถึง default path หากไม่เข้าเงื่อนไข condition อื่นๆแล้ว
+//Submit node ผู้เริ่ม flow มี action = Submit
+//Node name / stage name should be all uppercase
+//Submit node ต้องชื่อ SUBMIT เท่านั้น ( web app ต้องรู้)
+//Permission Type มีแค่ GROUP/INDIVIDUAL
+
+////////////วิธีการดำเนินการ
+//1.web app จะตัดสินใจเองว่า user จะใช้ flow ไหน (รู้ ID ของ flow)
+//2.web app จะต้องรู้เองว่าเวลา query จาก db มาแสดง ใครจะเห็นอันไหน ไม่เห็นอันไหน
+//3.web app จะตรวจสอบ CONFIG ว่า flow นั้น user จะเริ่ม flow ได้ไหมตาม config
+//4.web app จะจัดการ permission ของแต่ละข้อมูลด้วยตัวเอง ว่าใครสามารถแก้ข้อมูล form data ได้หรือไม่ได้ ใน stage ไหน (จะถาม CONFIG ก็ได้ แต่ต้องใส่ action มาให้ดี)
+//5.web app จะกรอก บันทึกข้อมูลลง DB ต้องมีข้อมูลว่า flow นั้นผ่าน stage อะไรมาแล้ว และรอ stage ไหนอยู่ และ master flow id คืออะไร โดยที่ stage submit จะลง stage = "SUBMIT" เท่านั้น
+//6.web app ควรเก็บข้อมูลในการ approve ร่วมกับ stage ที่ทำการ approve ไว้ ต้องเก็บด้วยนะว่า approve หรือเปล่า
+//6.เมื่อ user action กับ flow ไม่ว่าจะเป็น submit/approve ก่อนที่ service จะ save ลง DB จะต้องถามเสมอว่า node/stage ต่อไปชื่ออะไร
+//7.เมื่อคนจะทำรายการ approve ใน flow ใดๆจะต้องเอา awaiting stage + flow id มาถามกับ CONFIG ว่าคนนั้นมีสิทธิ์ใช่หรือไม่
+//8.เมื่อ webapp รู้ว่ามีสิทธิ์จึงจะทำการ เพิ่มสิทธิ์ใน view ต่อไป  หรือ อนุญาติให้ทำรายการใน service ต่อไป
+//9. web app ควรเก็บ stage ทั้งหมดไว้เป็น enum ที่ตรงกับ CONFIG เพื่อ renderview / อ้างอิงภายหลัง
+
+
+/////////////สิ่งที่ขาด
+//Sub-stage เช่นต้องครบ 3 คน จึงจะผ่าน หรือ 3/5 คน จะผ่าน stage นี้ได้
+////////////อันนี้ต้องเขียน approve node ใหม่ขึ้นมา พร้อมกับ condition ว่า sum แล้วต้องได้เท่าไร (แต่พวก require ก็ต้องผ่านเช่นกัน) และใส่ key ที่เป็น actionRole กำกับ รวมถึงใส่ permissionCards ให้กับ actionRole นั้น และต้องเขียนว่า require ไหม
+///////////ในทางกลับกัน DB ต้องเก็บข้อมูลการ approve /stage ร่วมกับ actionRole ไว้
+///////////
+
+//Delegate ตัวเองไม่อยู่ในช่วงเวลาที่กำหนด จึงให้คนอื่น on behalf of เราได้บางช่วงเวลา
+/////////// ปัญหาคือสิทธิ์ของคนที่ทำรายการไปแล้ว กับคนที่มอบ delegate ให้ ใครจะเห็นหรือไม่เห็นอย่างไรในช่วงเวลานั้น
+///ทางเลือกคือ static class เก็บ list ของ การ delegate ไว้ ว่าใคร delegate ให้ใคร --> ข้อเสียจะไม่ persistance และ CONFIG จะไม่รู้ว่า DB ของ original user มีสิทธิ์อะไรบ้าง
+///ให้ web app เก็บ table delegate โดยมีข้อมูล userowner / delegated user / dateEff/dateEndEff / active  โดยที่ใน user session ของ web app ต้องแยกเป็น delegate permission โดยมี username/roles ของ original user ไว้ และเมื่อถาม CONFIG จะถามทั้ง ตัวเอง และ delegate ที่มี หาก delegate มีสิทธิ์ ก็ต้องระบุใน DB ว่าทำในฐานะ on be half of
+
+//Email Node
+////Email Notification จะเก็บในระดับ DB อาจจะเป็น UserGroup record
+////การแจ้งเตือน email นั้น CONFIG จะ provide username/group+level ที่ next node นั้นต้องการไม่ว่าจะเป็น approve/reject (ในกรณี reject กลับไปหา submitter webapp ควรทำเอง ไม่ควรถาม config) (กรณี reject to node อื่นๆ web app ก็ควรทำเอง เพื่อระบุหาคนที่ approve มา หรือไม่งั้น CONFIG ก็ provide กลุ่มให้อีกรอบ)
+{
+  "version": "0.0.1",
+  "WorkFlowPath": [
+    {
+      "ID": "MT1",
+      "Nodes": [
+        {
+          "NodeType": "SUBMIT",
+          "StageName": "SUBMIT",
+          "ApproveNodes": [
+            {
+              "Node": "SALEVERIFY",
+              "Condition": null
+            }
+          ],
+          "RejectNodes": [
+            {
+              "Node": "SALESUBMIT",
+              "Condition": null
+            }
+          ],
+          "Permissions": [
+            {
+              "Action": "Submit",
+              "PermissionCards": [
+                {
+                  "Type": "GROUP",
+                  "RoleName": "MT_1",
+                  "RoleLevel": 0
+                },
+                {
+                  "Type": "GROUP",
+                  "RoleName": "Admin",
+                  "RoleLevel": -1
+                },
+                {
+                  "Type": "INDIVIDUAL",
+                  "RoleName": "sorasak_sri",
+                  "RoleLevel": -1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "NodeType": "APPROVE",
+          "StageName": "SALEVERIFY",
+          "ApproveNodes": [
+            {
+              "Node": "SALEAPPROVE",
+              "Condition": null
+            }
+          ],
+          "RejectNodes": [
+            {
+              "Node": "SALESUBMIT",
+              "Condition": null
+            }
+          ],
+          "Permissions": [
+            {
+              "Action": "Approve",
+              "PermissionCards": [
+                {
+                  "Type": "GROUP",
+                  "RoleName": "MT_1",
+                  "RoleLevel": 1
+                },
+                {
+                  "Type": "GROUP",
+                  "RoleName": "Admin",
+                  "RoleLevel": -1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "NodeType": "APPROVE",
+          "StageName": "LEGAL",
+          "ApproveNodes": [
+            {
+              "Node": "FIAPPROVE1",
+              "Condition": null
+            }
+          ],
+          "RejectNodes": [
+            {
+              "Node": "SALESUBMIT",
+              "Condition": null
+            }
+          ],
+          "Permissions": [
+            {
+              "Action": "Approve",
+              "PermissionCards": [
+                {
+                  "Type": "GROUP",
+                  "RoleName": "Legal",
+                  "RoleLevel": 1
+                },
+                {
+                  "Type": "GROUP",
+                  "RoleName": "Admin",
+                  "RoleLevel": -1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "NodeType": "APPROVE",
+          "StageName": "FIAPPROVE1",
+          "ApproveNodes": [
+            {
+              "Node": "ACCINPUT", //เงินสด
+              "Condition": "IsCashCustomer"
+            },
+            {
+              "Node": "FIAPPROVE2", //<=50k,>100k
+              "Condition": "IsCreditLE50k"
+            },
+            {
+              "Node": "FIAPPROVE2", //<=50k,>100k
+              "Condition": "IsCreditGT100k"
+            },
+            {
+              "Node": "FIAPPROVE3", //>50k,<=100k
+              "Condition": "IsCreditGT50ANDLE100"
+            }
+          ],
+          "RejectNodes": [
+            {
+              "Node": "SALESUBMIT",
+              "Condition": null
+            }
+          ],
+          "Permissions": [
+            {
+              "Action": "Approve",
+              "PermissionCards": [
+                {
+                  "Type": "GROUP",
+                  "RoleName": "Finance",
+                  "RoleLevel": 1
+                },
+                {
+                  "Type": "GROUP",
+                  "RoleName": "Admin",
+                  "RoleLevel": -1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "NodeType": "APPROVE",
+          "StageName": "FIAPPROVE2",
+          "ApproveNodes": [
+            {
+              "Node": "ACCINPUT", //<=50k,>100k
+              "Condition": "IsCreditLE50k"
+            },
+            {
+              "Node": "FIAPPROVE4",
+              "Condition": "IsCreditGT100k"
+            }
+          ],
+          "RejectNodes": [
+            {
+              "Node": "SALESUBMIT",
+              "Condition": null
+            }
+          ],
+          "Permissions": [
+            {
+              "Action": "Approve",
+              "PermissionCards": [
+                {
+                  "Type": "GROUP",
+                  "RoleName": "Finance",
+                  "RoleLevel": 2
+                },
+                {
+                  "Type": "GROUP",
+                  "RoleName": "Admin",
+                  "RoleLevel": -1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "NodeType": "APPROVE",
+          "StageName": "FIAPPROVE3",
+          "ApproveNodes": [
+            {
+              "Node": "ACCINPUT",
+              "Condition": null
+            }
+          ],
+          "RejectNodes": [
+            {
+              "Node": "SALESUBMIT",
+              "Condition": null
+            }
+          ],
+          "Permissions": [
+            {
+              "Action": "Approve",
+              "PermissionCards": [
+                {
+                  "Type": "GROUP",
+                  "RoleName": "Finance",
+                  "RoleLevel": 3
+                },
+                {
+                  "Type": "GROUP",
+                  "RoleName": "Admin",
+                  "RoleLevel": -1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "NodeType": "APPROVE",
+          "StageName": "FIAPPROVE4",
+          "ApproveNodes": [
+            {
+              "Node": "ACCINPUT",
+              "Condition": null
+            }
+          ],
+          "RejectNodes": [
+            {
+              "Node": "SALESUBMIT",
+              "Condition": null
+            }
+          ],
+          "Permissions": [
+            {
+              "Action": "Approve",
+              "PermissionCards": [
+                {
+                  "Type": "GROUP",
+                  "RoleName": "Finance",
+                  "RoleLevel": 4
+                },
+                {
+                  "Type": "GROUP",
+                  "RoleName": "Admin",
+                  "RoleLevel": -1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "NodeType": "APPROVE",
+          "StageName": "ACCINPUT",
+          "ApproveNodes": [
+            {
+              "Node": "SAPINPUT",
+              "Condition": null
+            }
+          ],
+          "RejectNodes": [
+            {
+              "Node": "SALESUBMIT",
+              "Condition": null
+            }
+          ],
+          "Permissions": [
+            {
+              "Action": "Approve",
+              "PermissionCards": [
+                {
+                  "Type": "GROUP",
+                  "RoleName": "Account",
+                  "RoleLevel": 1
+                },
+                {
+                  "Type": "GROUP",
+                  "RoleName": "Admin",
+                  "RoleLevel": -1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "NodeType": "SYSTEM",
+          "StageName": "SAPINPUT",
+          "ApproveNodes": [
+            {
+              "Node": "FINISH",
+              "Condition": null
+            }
+          ],
+          "RejectNodes": [
+            {
+              "Node": "SAPINPUT",
+              "Condition": null
+            }
+          ],
+          "Permissions": null
+        }
+      ]
+    }
+  ]
+}
