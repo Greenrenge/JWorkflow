@@ -9,7 +9,7 @@ namespace JWorkflow.Logger
     public interface ILogger
     {
         bool Log(string action, string data);
-        Task<bool> LogAsync(string action, string data);
+        //Task<bool> LogAsync(string action, string data);
     }
    
 }

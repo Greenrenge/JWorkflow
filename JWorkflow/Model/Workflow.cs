@@ -36,7 +36,7 @@ namespace JWorkflow
         private void log(string action, string msg)
         {
             msg = " " + _workflowPath.ID + " " + msg;
-            if (_logger != null) _logger.LogAsync(action, msg);
+            if (_logger != null) _logger.Log(action, msg);
         }
         private bool CheckPermission(IEnumerable<Permission> permissions, IPermissionIdentity identity)
         {

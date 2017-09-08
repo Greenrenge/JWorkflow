@@ -9,6 +9,6 @@ namespace JWorkflow.Logger
     public interface ILoggerJSON : ILogger
     {
         bool LogJSON(string action, object data);
-        Task<bool> LogJSONAsync(string action, object data);
+        //Task<bool> LogJSONAsync(string action, object data);
     }
 }
