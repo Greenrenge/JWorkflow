@@ -79,7 +79,7 @@ namespace JWorkflow
                 }
                 if (node.NodeType == NODETYPE.SUBMIT && _submitNode != null)
                 {
-                    log("CONFIG ERROR", "DUBLICATION FOUND FOR SUBMIT NODE");
+                    log("ERROR", "CONFIG ERROR:DUBLICATION FOUND FOR SUBMIT NODE");
                     continue;
                 }
                 if (node.NodeType == NODETYPE.SYSTEM && node.ApproveNodes.Count == 1 && node.ApproveNodes[0].Node.ToUpper() == "FINISH" && _finishNode == null)
@@ -91,7 +91,7 @@ namespace JWorkflow
                 }
                 if (node.NodeType == NODETYPE.SYSTEM && node.ApproveNodes.Count == 1 && node.ApproveNodes[0].Node.ToUpper() == "FINISH" && _finishNode != null)
                 {
-                    log("CONFIG ERROR", "DUBLICATION FOUND FOR FINISH NODE");
+                    log("ERROR", "CONFIG ERROR:DUBLICATION FOUND FOR FINISH NODE");
                     continue;
                 }
                 else
@@ -99,8 +99,8 @@ namespace JWorkflow
                     _nodeDict.Add(node.StageName.ToUpper(), node);
                 }
             }
-            if (_submitNode == null) log("CONFIG ERROR", "NOT FOUND SUBMIT NODE");
-            if (_finishNode == null) log("CONFIG ERROR", "NOT FOUND FINISH NODE");
+            if (_submitNode == null) log("ERROR", "CONFIG ERROR:NOT FOUND SUBMIT NODE");
+            if (_finishNode == null) log("ERROR", "CONFIG ERROR:NOT FOUND FINISH NODE");
         }
         public string FlowPathName { get { return _workflowPath.ID; } }//MT_1
         public bool isFlowInitiator(IPermissionIdentity identity)
@@ -127,7 +127,7 @@ namespace JWorkflow
             awaitingStage = awaitingStage.ToUpper();
             if (!_nodeDict.ContainsKey(awaitingStage))
             {
-                log("ERROR", "CANNOT FIND STAGE IN CONFIG : " + awaitingStage);
+                log("ERROR", "CONFIG ERROR:CANNOT FIND STAGE IN CONFIG : " + awaitingStage);
                 return false;
             }
            
@@ -146,7 +146,7 @@ namespace JWorkflow
             stageName = stageName.ToUpper();
             if (!_nodeDict.ContainsKey(stageName))
             {
-                log("ERROR", "CANNOT FIND STAGE IN CONFIG : " + stageName);
+                log("ERROR", "CONFIG ERROR:CANNOT FIND STAGE IN CONFIG : " + stageName);
             }
             else
             {
@@ -180,7 +180,7 @@ namespace JWorkflow
             {
                 if (!_nodeDict.ContainsKey(passedStage))
                 {
-                    log("CONFIG ERROR", "CANNOT FIND NEXT STAGE FOR " + passedStage);
+                    log("ERROR", "CONFIG ERROR:CANNOT FIND NEXT STAGE FOR " + passedStage);
                     return "ERROR";
                 }
                 List<NodeCondition> paths;
@@ -195,13 +195,13 @@ namespace JWorkflow
                     }
                     if (configPath.Condition == null && defaultPath != null)
                     {
-                        log("CONFIG WARNING", "DUBLICATION OF DEFAULT PATH FOR " + passedStage + " (" + (approve ? "Approve" : "Reject") + ")");
+                        log("WARNING", "CONFIG WARNING:DUBLICATION OF DEFAULT PATH FOR " + passedStage + " (" + (approve ? "Approve" : "Reject") + ")");
                         continue;
                     }
                     string conditionName = configPath.Condition;
                     if (!_conditionConfig.ContainsKey(conditionName))
                     {
-                        log("CONFIG ERROR", "CANNOT FIND CONDITION CONFIG FOR " + conditionName + " (" + (approve ? "Approve" : "Reject") + ")");
+                        log("ERROR", "CONFIG ERROR:CANNOT FIND CONDITION CONFIG FOR " + conditionName + " (" + (approve ? "Approve" : "Reject") + ")");
                         continue;
                     }
                     else
@@ -213,7 +213,7 @@ namespace JWorkflow
                 }
                 if (defaultPath == null)
                 {
-                    log("CONFIG ERROR", "CANNOT FIND NEXT STAGE(DEFAULT PATH) FOR " + passedStage + " (" + (approve ? "Approve" : "Reject") + ")");
+                    log("ERROR", "CONFIG ERROR:CANNOT FIND NEXT STAGE(DEFAULT PATH) FOR " + passedStage + " (" + (approve ? "Approve" : "Reject") + ")");
                     return "ERROR";
                 }
                 else
