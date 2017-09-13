@@ -30,7 +30,11 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="EntityFramework">
+      <HintPath>..\..\..\BaseClassEnitiy\bin\Debug\EntityFramework.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -42,14 +46,39 @@
   <ItemGroup>
     <Compile Include="Interfaces\ILogger.cs" />
     <Compile Include="Interfaces\ILoggerJSON.cs" />
-    <Compile Include="Model\Workflow.cs" />
-    <Compile Include="Model\WorkflowConditionConfig.cs" />
-    <Compile Include="Model\WorkflowConfig.cs" />
+    <Compile Include="Models\Workflow.cs" />
+    <Compile Include="Models\WorkflowConditionConfig.cs" />
+    <Compile Include="Models\WorkflowConfig.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Scaffolding\Base\WFGroup.cs" />
+    <Compile Include="Scaffolding\Base\WFUser.cs" />
+    <Compile Include="Scaffolding\Base\WFUserAction.cs" />
+    <Compile Include="Scaffolding\Interfaces\IWFActiveFlag.cs" />
+    <Compile Include="Scaffolding\Interfaces\IWFFlow.cs" />
+    <Compile Include="Scaffolding\Interfaces\IWFFlowRecord.cs" />
+    <Compile Include="Scaffolding\Interfaces\IWFGroup.cs" />
+    <Compile Include="Scaffolding\Interfaces\IWFUser.cs" />
+    <Compile Include="Scaffolding\Interfaces\IWFUserAction.cs" />
+    <Compile Include="Scaffolding\JFlow.cs" />
+    <Compile Include="Scaffolding\JGroup.cs" />
+    <Compile Include="Scaffolding\JUser.cs" />
+    <Compile Include="Scaffolding\JUserAction.cs" />
+    <Compile Include="Scaffolding\TFlowRecord.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\BaseClassEnitiy\BaseClassEnitiy.csproj">
+      <Project>{ae997586-56f9-4da0-8a9c-c7f24e8b583f}</Project>
+      <Name>BaseClassEnitiy</Name>
+    </ProjectReference>
+  </ItemGroup>
   <ItemGroup>
     <None Include="SampleConfig\flowsetting.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Scaffolding\Concept.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Scaffolding\Enums\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

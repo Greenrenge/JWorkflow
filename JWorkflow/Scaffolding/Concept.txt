@@ -1,0 +1,16 @@
+﻿BaseClass มีแต่ Basic info ไม่มี mapping ไรทั้งนั้น
+Class Mockup จะ inherit จาก BaseClass มา
+
+User จะมี dependency ไปหา UserGroup
+Group  จะมี dependency ไปหา UserGroup 
+แต่ UserGroup ห้ามมี Dependency ไปหาใคร
+
+Generic class ที่มี constrain เป็น Inherit ต่างจาก interface ตรงที่ Inherit จะ provide basic functionality ให้ด้วย
+
+Navigate properties เพื่อให้ service ทำงานได้เท่านั้น !!
+
+Service ทำอะไรให้
+- ApproveFlow โดยอ่านจาก Config
+- Reject Flow โดยอ่านจาก Config
+
+Service ต้อง Generic Type
