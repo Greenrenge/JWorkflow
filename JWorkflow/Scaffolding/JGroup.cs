@@ -38,27 +38,6 @@ namespace JWorkflow.Scaffolding
             }
         }
         #endregion
-
-
-        #region IJActiveFlag
-        [NotMapped]
-        bool IWFActiveFlag.IsActive
-        {
-            get
-            {
-                return Active == "A";
-            }
-        }
-
-        void IWFActiveFlag.SetActive()
-        {
-            Active = "A";
-        }
-
-        void IWFActiveFlag.SetActiveFlagToHistory()
-        {
-            Active = "N";
-        }
-        #endregion IJActiveFlag
+       
     }
 }

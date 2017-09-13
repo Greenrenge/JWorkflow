@@ -1,4 +1,5 @@
-﻿using System;
+﻿using JWorkflow.Models;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,17 +8,7 @@ using System.Threading.Tasks;
 
 namespace JWorkflow
 {
-    public enum NODETYPE
-    {
-        SYSTEM,
-        SUBMIT,
-        APPROVE,
-    }
-    public enum PermissionType
-    {
-        GROUP,
-        INDIVIDUAL,
-    }
+
     public class WorkflowConfig
     {
         public string version { get; set; }

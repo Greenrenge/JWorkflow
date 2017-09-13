@@ -1,6 +1,8 @@
-﻿namespace JWorkflow.Scaffolding
+﻿using BaseClassEnitiy.Models;
+
+namespace JWorkflow.Scaffolding
 {
-    public interface IWFActiveFlag
+    public interface IWFActiveFlag:IActiveFlagEntity
     {
         bool IsActive { get; }
         void SetActiveFlagToHistory();

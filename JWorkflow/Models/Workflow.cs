@@ -1,4 +1,5 @@
 ﻿using JWorkflow.Logger;
+using JWorkflow.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -65,6 +66,7 @@ namespace JWorkflow
 
         public Workflow(WorkFlowPath path, WorkFlowConditionConfig<T> conditionSetting, ILogger logger = null)
         {
+            _nodeDict = new Dictionary<string, Node>();
             _workflowPath = path;
             _conditionConfig = conditionSetting;
             if (logger != null) _logger = logger;
