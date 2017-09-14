@@ -6,6 +6,5 @@ namespace JWorkflow.Scaffolding
     public interface IWFUser
     {
         string UserName { get; }
-        ICollection<IWFUserAction> Claims { get; }
     }
 }

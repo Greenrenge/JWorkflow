@@ -6,12 +6,12 @@ namespace JWorkflow.Scaffolding
 {
     public interface IWFFlowRecord
     {
-        IWFUser Owner { get; set; }
+        IWFUser ActionByUser { get; set; }
         string Action { get; set; }
         string ActionForStage { get; set; }
         string PreviousStage { get; set; }
         string RejectToStage { get; set; }
         DateTime ActionDate { get; set; }
-        short Version { get; set; }
+        int FlowVersion { get; set; }
     }
 }
